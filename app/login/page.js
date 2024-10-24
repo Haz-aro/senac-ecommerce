@@ -1,11 +1,12 @@
 "use client";
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button, TextField, Typography, Box, Link } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import Image from 'next/image';
+import { signIn } from 'next-auth/react';
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -17,28 +18,37 @@ export default function LoginForm() {
     setShowPassword(!showPassword);
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     let email = document.getElementById('email').value;
     let password = document.getElementById('password').value;
 
     if (!email) {
       setEmailError('Email ou número de telefone é obrigatório.');
+      return;
     } else {
       setEmailError('');
     }
 
     if (!password) {
       setPasswordError('A senha é obrigatória.');
+      return;
     } else {
       setPasswordError('');
     }
 
-    if (email && password) {
-      if (email !== 'valid@example.com' || password !== 'correctpassword') {
-        setLoginError('Usuário ou senha incorretos');
-      } else {
-        setLoginError('');
-      }
+    // Autenticação via NextAuth usando o provedor 'credentials'
+    const result = await signIn('credentials', {
+      redirect: false,
+      email,
+      password,
+    });
+
+    if (!result.ok) {
+      setLoginError('Usuário ou senha incorretos');
+    } else {
+      setLoginError('');
+      // Redirecionar para a página inicial ou outra após login bem-sucedido
+      window.location.href = '/'; // exemplo de redirecionamento
     }
   };
 
@@ -66,7 +76,7 @@ export default function LoginForm() {
         }}
       >
         <Box mb={3}>
-          <Image src="/bazar.png" alt="Bazaar Logo"  width={120} height={100}  />
+          <Image src="/bazar.png" alt="Bazaar Logo" width={120} height={100} />
         </Box>
 
         <Typography variant="h4" sx={{ fontFamily: 'Poppins, sans-serif', fontSize: '24px', mb: 2, color: '#2f3349' }}>
@@ -80,9 +90,6 @@ export default function LoginForm() {
           placeholder="exemplo.email.com"
           variant="outlined"
           margin="normal"
-          InputProps={{
-            style: { fontFamily: 'Poppins, sans-serif' },
-          }}
           error={!!emailError}
           helperText={emailError}
         />
@@ -96,9 +103,6 @@ export default function LoginForm() {
             type={showPassword ? 'text' : 'password'}
             variant="outlined"
             margin="normal"
-            InputProps={{
-              style: { fontFamily: 'Poppins, sans-serif' },
-            }}
             error={!!passwordError}
             helperText={passwordError}
           />
@@ -133,26 +137,16 @@ export default function LoginForm() {
           </Typography>
         )}
 
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            width: '100%',
-            marginTop: '10px',
-            alignItems: 'center',
-          }}
-        >
-          <Typography variant="body1" sx={{ fontFamily: 'Poppins, sans-serif', color: '#777', mt: 2 }}>
-            ou
-          </Typography>
-        </Box>
+        <Typography variant="body1" sx={{ fontFamily: 'Poppins, sans-serif', color: '#777', mt: 2 }}>
+          ou
+        </Typography>
 
         <Button
           fullWidth
           variant="contained"
           sx={{
             marginBottom: 1,
-            backgroundColor: '#4285F4', //azul
+            backgroundColor: '#4285F4', // Azul do Google
             color: '#fff',
             padding: '10px',
             fontSize: '14px',
@@ -163,17 +157,19 @@ export default function LoginForm() {
               backgroundColor: '#357ae8',
             },
           }}
+          onClick={() => signIn('google')}
           startIcon={<GoogleIcon sx={{ mr: 1 }} />}
         >
-          Continuar com google
+          Continuar com Google
         </Button>
 
+        {/* Botão de login com Facebook, ainda não implementado */}
         <Button
           fullWidth
           variant="contained"
           sx={{
             marginBottom: 2,
-            backgroundColor: '#1877F2', // azul
+            backgroundColor: '#1877F2', // Azul do Facebook
             color: '#fff',
             padding: '10px',
             fontSize: '14px',
@@ -186,7 +182,7 @@ export default function LoginForm() {
           }}
           startIcon={<FacebookIcon sx={{ mr: 1 }} />}
         >
-          Continuar com facebook
+          Continuar com Facebook
         </Button>
 
         <Box
@@ -198,10 +194,37 @@ export default function LoginForm() {
             alignItems: 'center',
           }}
         >
-          <Link href="#" underline="hover" sx={{ fontFamily: 'Poppins, sans-serif', fontSize: '14px', color: '#2f3349', mb: 1, border: '1px solid #ccc', padding: '10px', width: '100%', textAlign: 'center', borderRadius: '5px' }}>
+          <Link
+            href="#"
+            underline="hover"
+            sx={{
+              fontFamily: 'Poppins, sans-serif',
+              fontSize: '14px',
+              color: '#2f3349',
+              mb: 1,
+              border: '1px solid #ccc',
+              padding: '10px',
+              width: '100%',
+              textAlign: 'center',
+              borderRadius: '5px',
+            }}
+          >
             Esqueceu a senha?
           </Link>
-          <Link href="#" underline="hover" sx={{ fontFamily: 'Poppins, sans-serif', fontSize: '14px', color: '#2f3349', border: '1px solid #ccc', padding: '10px', width: '100%', textAlign: 'center', borderRadius: '5px' }}>
+          <Link
+            href="#"
+            underline="hover"
+            sx={{
+              fontFamily: 'Poppins, sans-serif',
+              fontSize: '14px',
+              color: '#2f3349',
+              border: '1px solid #ccc',
+              padding: '10px',
+              width: '100%',
+              textAlign: 'center',
+              borderRadius: '5px',
+            }}
+          >
             Criar conta
           </Link>
         </Box>
